@@ -1,0 +1,23 @@
+﻿@using Pizzeria.Helper
+@{
+    var isLogged = !SessionHelper.IsUsernameEmpty(Context.Session);
+}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" asp-action="Index" asp-controller=@(isLogged ? "Admin" : "Home")>Pizzeria</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            @if (isLogged)
+            {
+                <a class="nav-item nav-link" asp-action="AddLayer" asp-controller="Adimn">Add Layer</a>
+                <a class="nav-item nav-link" asp-action="AddIngredient" asp-controller="Adimn">Add Ingredient</a>
+            }
+            else
+            {
+                <a class="nav-item nav-link" asp-action="Login" asp-controller="Adimn">Login</a>
+                <a class="nav-item nav-link" asp-action="Index">Home</a>
+            }
+        </div>
+    </div>
+</nav>
+

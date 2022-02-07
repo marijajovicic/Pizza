@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace Pizzeria.Models
 {
-    public class Pizza
+    public class Layer
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string Name { get; set; }
-        public IList<string> IngredientIds { get; set; }
     }
 }

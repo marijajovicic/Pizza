@@ -1,0 +1,37 @@
+﻿@model (System.Collections.Generic.IList<Pizzeria.Models.Ingredient> Ingredients, string Error)
+@{
+    ViewData["Title"] = "Admin Add Ingredient";
+}
+
+<h1>Add Ingredient</h1>
+<a href="@Url.Action("Index", "Admin")" class="mb-5">Go back</a>
+<form method="post">
+    <div class="card text-center">
+        <div class="card-body pl-5 pr-5">
+            <h3 class="card-title">Add ingredient</h3>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Name:</label>
+                <div class="col-sm-10">
+                    <input name="Name" type="text" class="form-control">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Price:</label>
+                <div class="col-sm-10">
+                    <input name="Price" type="text" class="form-control">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Layer:</label>
+                <div class="col-sm-10">
+                    <input name="Price" type="text" class="form-control">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            @if (string.IsNullOrEmpty(Model.Error))
+            {
+                <p class="text-danger">@Model.Error</p>
+            }
+        </div>
+    </div>
+</form>

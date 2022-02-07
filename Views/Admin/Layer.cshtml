@@ -1,0 +1,48 @@
+﻿@model (System.Collections.Generic.IList<Pizzeria.Models.Layer> Layers, string Error)
+@{
+    ViewData["Title"] = "Admin Layers";
+}
+
+<h1>Add Ingredient</h1>
+<a href="@Url.Action("Index", "Admin")" class="mb-5">Go back</a>
+<form method="post">
+    <div class="card text-center">
+        <div class="card-body pl-5 pr-5">
+            <h3 class="card-title">Add layer</h3>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Name:</label>
+                <div class="col-sm-10">
+                    <input name="Name" type="text" class="form-control">
+                </div>
+            </div>
+           <button type="submit" class="btn btn-primary">Submit</button>
+            @if (string.IsNullOrEmpty(Model.Error))
+            {
+                <p class="text-danger">@Model.Error</p>
+            }
+        </div>
+    </div>
+</form>
+
+<h1>Ingredients</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col"></th>
+        </tr>
+    </thead> 
+    <tbody>
+        @foreach(var layer in Model.Layers)
+        {
+            <tr>
+                <td>@layer.Name</td>
+                <td>
+                    <button class="btn btn-danger" asp-action="DeleteLayer" asp-route-id="@layer.Id">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

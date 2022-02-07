@@ -8,6 +8,9 @@ namespace Pizzeria
     public class MongoDB
     {
         public static string DatabaseName => "pizzeria"; 
+        public static string AdministratorCollection => "admin";
+        public static string IngredientCollection => "ingredient";
+        public static string LayerCollection => "layer";
 
     }
 }

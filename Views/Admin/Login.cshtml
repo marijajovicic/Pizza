@@ -1,0 +1,32 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="d-flex vh-100">
+    <div class="text-dark vw-100 vh-50 d-flex align-items-center justify-content-center flex-column pb-5" style="z-index: 1;">
+        <h1 class="mb-5 text-center">Welcome to Pizzeria <br /> please log in</h1> 
+
+        <form class="w-50" method="post">
+            <div class="input-group input-group-lg mb-2">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Username</span>
+                </div>
+                <input type="text" class="form-control" name="username" aria-describedby="inputGroup-sizing-sm">
+            </div>
+            <div class="input-group input-group-lg mb-2">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Password</span>
+                </div>
+                <input type="password" class="form-control" name="password" aria-describedby="inputGroup-sizing-sm">
+            </div> 
+            <button class="btn btn-primary d-block w-100">Login</button>
+            @if (!string.IsNullOrEmpty(Model))
+            {
+                <p class="text-danger">Error: @Model</p>
+            }
+        </form>
+    </div>
+</div>
+
+

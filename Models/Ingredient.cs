@@ -13,7 +13,7 @@ namespace Pizzeria.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string Name { get; set; }
-        public Layers Layer { get; set; }
+        public Layer Layer { get; set; }
         public int Price { get; set; }
     }
 }
