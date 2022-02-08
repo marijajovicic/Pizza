@@ -11,6 +11,7 @@ namespace Pizzeria
         public static string AdministratorCollection => "admin";
         public static string IngredientCollection => "ingredient";
         public static string LayerCollection => "layer";
+        public static string PizzaCollection => "pizza";
 
     }
 }

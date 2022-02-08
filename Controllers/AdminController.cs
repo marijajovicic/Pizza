@@ -28,7 +28,7 @@ namespace Pizzeria.Controllers
             return View(); 
         }
 
-        public async Task<IActionResult> LoginAsync()
+        public async Task<IActionResult> Login()
         {
             if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
@@ -71,36 +71,82 @@ namespace Pizzeria.Controllers
 
         public async Task<IActionResult> Ingredient()
         {
-            if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
                 return RedirectToAction("Index");
             }
 
             var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+            var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
 
-            return View((ingredients, ""));
+            return View("Ingredient", (ingredients, layers, ""));
         }
- 
-        public async Task<IActionResult> DeleteIngredient(string name)
+
+        [HttpPost]
+        public async Task<IActionResult> AddIngredient(IngredientViemModel ingredient)
         {
-            if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
                 return RedirectToAction("Index");
             }
 
-            if (string.IsNullOrEmpty(name))
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+            var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+
+            if (string.IsNullOrWhiteSpace(ingredient.Name))
+            {
+                return View("Ingredient", (ingredients, layers, "Name can not be empty"));
+            } 
+            if (ingredient.Price <= 0)
+            {
+                return View("Ingredient", (ingredients, layers, "Price must be greater than zero"));
+            }
+            var layer = layers.FirstOrDefault(l => l.Id == ingredient.LayerId);
+            if (layer == null)
+            {
+                return View("Ingredient", (ingredients, layers, "Layer does not exists"));
+            } 
+
+            var ingredientCreate = new Ingredient
+            {
+               Layer = layer,
+               Name = ingredient.Name,
+               Price = ingredient.Price
+            };
+            await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).InsertOneAsync(ingredientCreate);
+
+            return View("Ingredient", (ingredients, layers,""));
+        }
+ 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteIngredient(string id)
+        {
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (string.IsNullOrEmpty(id))
             {
                 return RedirectToAction("Ingredient");
             }
 
-            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(i => i.Name == name).ToListAsync();
+            var pizzas = await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).Find(new BsonDocument()).ToListAsync();
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+            var layers = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            
+            if (pizzas.Any(p => p.IngredientIds.Contains(id)))
+            {
+                return View("Ingredient", (ingredients, layers, "", "Unable to delete pizza, there is existing pizza with ingredient"));
 
-            return View((ingredients, ""));
+            }
+
+            return View("Ingredient", (ingredients, layers, ""));
         }
 
         public async Task<IActionResult> Layer()
         {
-            if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
                 return RedirectToAction("Index");
             }
@@ -114,7 +160,7 @@ namespace Pizzeria.Controllers
         [HttpPost]
         public async Task<IActionResult> AddLayer(Layer layer)
         {
-            if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
                 return RedirectToAction("Index");
             } 
@@ -133,13 +179,16 @@ namespace Pizzeria.Controllers
                 return View("Layer", (layers, "Layer already exists"));
             }
 
+            await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).InsertOneAsync(layer);
+            layers.Add(layer);
+
             return View("Layer", (layers, "")); 
         }
 
         [HttpDelete]
         public async Task<IActionResult> DeleteLayer(string id)
         {
-            if (!SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
             {
                 return RedirectToAction("Index");
             } 

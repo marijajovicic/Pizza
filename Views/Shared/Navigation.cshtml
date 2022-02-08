@@ -9,13 +9,12 @@
         <div class="navbar-nav">
             @if (isLogged)
             {
-                <a class="nav-item nav-link" asp-action="AddLayer" asp-controller="Adimn">Add Layer</a>
-                <a class="nav-item nav-link" asp-action="AddIngredient" asp-controller="Adimn">Add Ingredient</a>
+                <a class="nav-item nav-link" asp-action="Layer" asp-controller="Admin">Layers</a>
+                <a class="nav-item nav-link" asp-action="Ingredient" asp-controller="Admin">Ingredients</a>
             }
             else
             {
-                <a class="nav-item nav-link" asp-action="Login" asp-controller="Adimn">Login</a>
-                <a class="nav-item nav-link" asp-action="Index">Home</a>
+                <a class="nav-item nav-link" asp-action="Login" asp-controller="Admin">Login</a>
             }
         </div>
     </div>
