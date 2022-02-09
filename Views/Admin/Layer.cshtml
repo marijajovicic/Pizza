@@ -1,4 +1,4 @@
-﻿@model (System.Collections.Generic.List<Pizzeria.Models.Layer> Layers, string Error)
+﻿@model (System.Collections.Generic.List<Pizzeria.Models.Layer> Layers, string Error, string ErrorDelete)
 @{
     ViewData["Title"] = "Admin Layers";
 }
@@ -16,13 +16,11 @@
         <input type="text" class="form-control" name="name" aria-describedby="inputGroup-sizing-sm">
     </div>
    <button type="submit" class="btn btn-primary d-block w-100">Submit</button>
-    @if (string.IsNullOrEmpty(Model.Error))
-    {
-        <p class="text-danger">@Model.Error</p>
-    }
+    <p class="text-danger">@Model.Error</p>
 </form>
 
 <h3 class="mt-5">Layers</h3>
+<p class="text-danger">@Model.ErrorDelete</p>
 <table class="table">
     <thead>
         <tr>
@@ -36,9 +34,12 @@
             <tr>
                 <td>@layer.Name</td>
                 <td class="col-1">
-                    <button class="btn btn-danger" asp-action="DeleteLayer" asp-route-id="@layer.Id">
-                        Delete
-                    </button>
+                    <form asp-action="DeleteLayer" method="post">
+                        <input type="hidden" name="id" value="@layer.Id" />
+                        <button class="btn btn-danger" type="submit">
+                            Delete
+                        </button>
+                    </form>
                 </td>
             </tr>
         }

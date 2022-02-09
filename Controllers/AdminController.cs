@@ -78,8 +78,15 @@ namespace Pizzeria.Controllers
 
             var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
             var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var models = ingredients.Select(i => new IngredientViewTableModel
+            {
+                Id = i.Id,
+                LayerName = i.Layer.Name,
+                Name = i.Name,
+                Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
+            });
 
-            return View("Ingredient", (ingredients, layers, ""));
+            return View("Ingredient", (models, layers, "", ""));
         }
 
         [HttpPost]
@@ -92,33 +99,41 @@ namespace Pizzeria.Controllers
 
             var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
             var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var models = ingredients.Select(i => new IngredientViewTableModel
+            {
+                Id = i.Id,
+                LayerName = i.Layer.Name,
+                Name = i.Name,
+                Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
+            });
 
             if (string.IsNullOrWhiteSpace(ingredient.Name))
             {
-                return View("Ingredient", (ingredients, layers, "Name can not be empty"));
+                return View("Ingredient", (models, layers, "Name can not be empty", ""));
             } 
-            if (ingredient.Price <= 0)
+            var price = float.Parse(ingredient.Price.Replace(".", ","));
+            if (price < 0)
             {
-                return View("Ingredient", (ingredients, layers, "Price must be greater than zero"));
+                return View("Ingredient", (models, layers, "Price must be greater than zero", ""));
             }
             var layer = layers.FirstOrDefault(l => l.Id == ingredient.LayerId);
             if (layer == null)
             {
-                return View("Ingredient", (ingredients, layers, "Layer does not exists"));
+                return View("Ingredient", (models, layers, "Layer does not exists", ""));
             } 
 
             var ingredientCreate = new Ingredient
             {
                Layer = layer,
                Name = ingredient.Name,
-               Price = ingredient.Price
+               Price = price
             };
             await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).InsertOneAsync(ingredientCreate);
 
-            return View("Ingredient", (ingredients, layers,""));
+            return RedirectToAction("Ingredient");
         }
  
-        [HttpDelete]
+        [HttpPost]
         public async Task<IActionResult> DeleteIngredient(string id)
         {
             if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
@@ -133,15 +148,78 @@ namespace Pizzeria.Controllers
 
             var pizzas = await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).Find(new BsonDocument()).ToListAsync();
             var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
-            var layers = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var models = ingredients.Select(i => new IngredientViewTableModel
+            {
+                Id = i.Id,
+                LayerName = i.Layer.Name,
+                Name = i.Name,
+                Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
+            });
+
             
             if (pizzas.Any(p => p.IngredientIds.Contains(id)))
             {
-                return View("Ingredient", (ingredients, layers, "", "Unable to delete pizza, there is existing pizza with ingredient"));
+                return View("Ingredient", (models, layers, "", "Unable to delete ingredient, there is existing pizza with ingredient"));
 
             }
+            if (ingredients.All(i => i.Id != id))
+            {
+                return View("Ingredient", (models, layers, "", "Invalid ingredient"));
+            }
 
-            return View("Ingredient", (ingredients, layers, ""));
+            await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).DeleteOneAsync(i => i.Id == id);
+ 
+            return View("Ingredient", (models.Where(i => i.Id != id).ToList(), layers, "", ""));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditIngredient(string id, string price)
+        {
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("Ingredient");
+            }
+
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+            var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var models = ingredients.Select(i => new IngredientViewTableModel
+            {
+                Id = i.Id,
+                LayerName = i.Layer.Name,
+                Name = i.Name,
+                Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
+            }); 
+            
+            var priceF = float.Parse(price.Replace(".", ","));
+            if (priceF < 0)
+            {
+                return View("Ingredient", (models, layers, "", "price can not be less then zero")); 
+            }
+
+            var ingredient = ingredients.FirstOrDefault(i => i.Id == id);
+
+            if (ingredient == null)
+            {
+                return View("Ingredient", (models, layers, "", "Invalid ingredient"));
+            }
+
+            ingredient.Price = priceF;
+            await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).ReplaceOneAsync(i => i.Id == id, ingredient);
+            models = ingredients.Select(i => new IngredientViewTableModel
+            {
+                Id = i.Id,
+                LayerName = i.Layer.Name,
+                Name = i.Name,
+                Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
+            }); 
+ 
+            return View("Ingredient", (models, layers, "", ""));
         }
 
         public async Task<IActionResult> Layer()
@@ -153,7 +231,7 @@ namespace Pizzeria.Controllers
 
             var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
 
-            return View((layers, "")); 
+            return View((layers, "", "")); 
         }
 
 
@@ -170,22 +248,22 @@ namespace Pizzeria.Controllers
 
             if (string.IsNullOrEmpty(layer.Name))
             {
-                return View("Layer", (layers, "Layer name can not be empty"));
+                return View("Layer", (layers, "Layer name can not be empty", ""));
             }
 
             var found = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(l => l.Name == layer.Name).AnyAsync();
             if (found)
             {
-                return View("Layer", (layers, "Layer already exists"));
+                return View("Layer", (layers, "Layer already exists", ""));
             }
 
             await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).InsertOneAsync(layer);
             layers.Add(layer);
 
-            return View("Layer", (layers, "")); 
+            return View("Layer", (layers, "", "")); 
         }
 
-        [HttpDelete]
+        [HttpPost]
         public async Task<IActionResult> DeleteLayer(string id)
         {
             if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
@@ -194,15 +272,38 @@ namespace Pizzeria.Controllers
             } 
 
             var layers = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
 
-            if (layers.Any(l => l.Id == id))
+            if (layers.All(l => l.Id != id))
             {
-                return View("Layer", (layers, ""));
+                return View("Layer", (layers, "", ""));
+            }
+            if (ingredients.Any(i => i.Layer.Id == id))
+            {
+                return View("Layer", (layers, "", "There is an ingredient that uses this layer, please delete all ingredients that are using this layer"));
             }
 
             await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).DeleteOneAsync(l => l.Id == id);
 
-            return View("Layer", (layers.Where(l => l.Id != id), "")); 
+            return View("Layer", (layers.Where(l => l.Id != id), "", "")); 
+        }
+
+        public async Task<IActionResult> Pizza()
+        {
+            var layres = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+
+            var models = ingredients.GroupBy(i => i.Layer.Name, (layerName, ingredient) => new LayerGroupedIngredientViewModel{ 
+                LayerName = layerName,
+                Ingredient = ingredient.Select(i => 
+                    new IngredientViewModelForGrouped
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        Price = Math.Round(i.Price, 2).ToString("0.00")
+                    }).ToList()
+            }).ToList();
+            return View(models);
         }
 
     }

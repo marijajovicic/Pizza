@@ -1,6 +1,6 @@
-﻿@model (System.Collections.Generic.IList<Pizzeria.Models.Ingredient> Ingredients, string Error, string DeleteError)
+﻿@model (System.Collections.Generic.IEnumerable<Pizzeria.Models.IngredientViewTableModel> Ingredients, System.Collections.Generic.List<Pizzeria.Models.Layer> Layers, string Error, string DeleteError)
 @{
-    ViewData["Title"] = "Admin Add Ingredient";
+    ViewData["Title"] = "Admin Ingredient";
 }
 
 <div class="d-flex justify-content-between align-items-baseline mb-5">
@@ -20,32 +20,26 @@
         <div class="input-group-prepend">
             <span class="input-group-text">Price</span>
         </div>
-        <input type="text" class="form-control" name="Price" aria-describedby="inputGroup-sizing-sm">
+        <input type="number" step="0.01" min="0.0" class="form-control" name="Price" aria-describedby="inputGroup-sizing-sm">
     </div>
-    <select class="form-select" aria-label="Default select example">
-        <option selected>Open this select menu</option>
-        <option value="1">One</option>
-        <option value="2">Two</option>
-        <option value="3">Three</option>
+    <select class="form-select" name="layerId" aria-label="Select layer">
+        @foreach (var layer in Model.Layers)
+        {
+            <option value="@layer.Id">@layer.Name</option>
+        }
     </select>    
     <button type="submit" class="btn btn-primary d-block w-100">Submit</button>
-    @if (string.IsNullOrEmpty(Model.Error))
-    {
-        <p class="text-danger">@Model.Error</p>
-    }
+    <p class="text-danger">@Model.Error</p>
 </form>
 
 <h3 class="mt-5">Ingredients</h3>
-@if (string.IsNullOrEmpty(Model.DeleteError))
-{
-    <p class="text-danger">@Model.DeleteError</p>
-}
+<p class="text-danger">@Model.DeleteError</p>
 <table class="table">
     <thead>
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Layer</th>
-            <th scope="col">price</th>
+            <th scope="col">price update</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -54,11 +48,25 @@
         {
             <tr>
                 <td>@ingredient.Name</td>
-                <td>@ingredient.Layer.Name</td>
+                <td>@ingredient.LayerName</td>
+                <td> 
+                    <form method="post" asp-action="EditIngredient">
+                        <input type="hidden" name="id" value="@ingredient.Id" />
+                        <input type="number" step="0.01" min="0.0" class="form-control" name="Price" value="@ingredient.Price">
+
+                        <button class="btn btn-warning" type="submit">
+                            Update
+                        </button>
+                    </form>
+                </td>
                 <td>
-                    <button class="btn btn-danger" asp-action="DeleteIngredient" asp-route-id="@ingredient.Id">
-                        Delete
-                    </button>
+                    
+                    <form method="post" asp-action="DeleteIngredient">
+                        <input type="hidden" name="id" value="@ingredient.Id" />
+                        <button class="btn btn-danger" type="submit">
+                            Delete
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
