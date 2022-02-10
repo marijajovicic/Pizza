@@ -290,12 +290,16 @@ namespace Pizzeria.Controllers
 
         public async Task<IActionResult> Pizza()
         {
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            } 
             var layres = await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).Find(new BsonDocument()).ToListAsync();
             var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
 
             var models = ingredients.GroupBy(i => i.Layer.Name, (layerName, ingredient) => new LayerGroupedIngredientViewModel{ 
                 LayerName = layerName,
-                Ingredient = ingredient.Select(i => 
+                Ingredients = ingredient.Select(i => 
                     new IngredientViewModelForGrouped
                     {
                         Id = i.Id,
@@ -306,6 +310,59 @@ namespace Pizzeria.Controllers
             return View(models);
         }
 
+        public async Task<IActionResult> AddPizza(Pizza pizza)
+        { 
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            } 
+
+            if (!string.IsNullOrWhiteSpace(pizza.Name) && pizza.IngredientIds.Count != 0)
+            {
+                await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).InsertOneAsync(pizza);
+            }
+
+            return RedirectToAction("Pizza");
+        }
+
+        public async Task<IActionResult> AllPizzas()
+        { 
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            } 
+
+            var pizzas = await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).Find(new BsonDocument()).ToListAsync();
+            var ingredients = await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).Find(new BsonDocument()).ToListAsync();
+
+            var model = pizzas.Select(p => {
+                var viewIngredients = ingredients.Where(i => p.IngredientIds.Contains(i.Id));
+                var pizzaView = new PizzaViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name, 
+                    Ingredients = viewIngredients.Select(i => i.Name).ToList(),
+                    Price = Math.Round(viewIngredients.Sum(i => i.Price), 2).ToString("0.00")
+                };
+
+                return pizzaView;
+            }).ToList();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePizza(string id)
+        {
+            if (SessionHelper.IsUsernameEmpty(HttpContext.Session))
+            {
+                return RedirectToAction("Index");
+            } 
+
+            await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).DeleteOneAsync(p => p.Id == id);
+
+            return RedirectToAction("AllPizzas");
+        }
     }
 
 }

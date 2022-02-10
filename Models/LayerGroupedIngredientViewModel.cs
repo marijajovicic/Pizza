@@ -8,7 +8,7 @@ namespace Pizzeria.Models
     public class LayerGroupedIngredientViewModel
     {
         public string LayerName { get; set; }
-        public IList<IngredientViewModelForGrouped> Ingredient { get; set; }
+        public IList<IngredientViewModelForGrouped> Ingredients { get; set; }
     }
 
     public class IngredientViewModelForGrouped
