@@ -170,7 +170,7 @@ namespace Pizzeria.Controllers
 
             await _mongoDatabase.GetCollection<Ingredient>(MongoDB.IngredientCollection).DeleteOneAsync(i => i.Id == id);
  
-            return View("Ingredient", (models.Where(i => i.Id != id).ToList(), layers, "", ""));
+            return View("Ingredient", (models.Where(i => i.Id != id), layers, "", ""));
         }
 
         [HttpPost]
