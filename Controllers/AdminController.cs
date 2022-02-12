@@ -285,7 +285,7 @@ namespace Pizzeria.Controllers
 
             await _mongoDatabase.GetCollection<Layer>(MongoDB.LayerCollection).DeleteOneAsync(l => l.Id == id);
 
-            return View("Layer", (layers.Where(l => l.Id != id), "", "")); 
+            return View("Layer", (layers.Where(l => l.Id != id).ToList(), "", "")); 
         }
 
         public async Task<IActionResult> Pizza()
@@ -341,8 +341,8 @@ namespace Pizzeria.Controllers
                 {
                     Id = p.Id,
                     Name = p.Name, 
-                    Ingredients = viewIngredients.Select(i => i.Name).ToList(),
-                    Price = Math.Round(viewIngredients.Sum(i => i.Price), 2).ToString("0.00")
+                    Ingredients = viewIngredients.Select(i => $"{i.Layer.Name}: {i.Name}").ToList(),
+                    Price = Math.Round(viewIngredients.Sum(i => i.Price), 2).ToString("0.00") + "€"
                 };
 
                 return pizzaView;
@@ -362,6 +362,13 @@ namespace Pizzeria.Controllers
             await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).DeleteOneAsync(p => p.Id == id);
 
             return RedirectToAction("AllPizzas");
+        }
+
+        public IActionResult Logout()
+        {
+            SessionHelper.SetUsername(HttpContext.Session, "");
+
+            return RedirectToAction("Index", "Home");
         }
     }
 

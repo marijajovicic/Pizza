@@ -1,0 +1,45 @@
+﻿@model System.Collections.Generic.List<Pizzeria.Models.LayerGroupedIngredientViewModel>
+@{
+    ViewData["Title"] = "Make Pizza";
+}
+
+<div class="d-flex justify-content-between align-items-baseline mb-5">
+    <h1>Pizza</h1>
+    <a href="@Url.Action("Index", "Home")">Go back</a>
+</div>
+<h3>Make Pizza</h3>
+@foreach (var layerIngredient in Model)
+{
+    <div class="d-flex justify-content-start flex-wrap mb-3" style="gap: 0px 20px">
+        <h5>@layerIngredient.LayerName:</h5>
+        @foreach (var ingredient in layerIngredient.Ingredients)
+        {
+            <div class="form-check">
+                <input class="form-check-input prices" type="checkbox" value="@ingredient.Price">
+                <label class="form-check-label" for="flexCheckDefault">
+                    @ingredient.Name - @ingredient.Price€
+                </label>
+            </div>
+        }
+    </div>
+}
+<button class="btn btn-success d-block w-100 mt-3" onclick="orderPizza()">Order</button>
+
+@section Scripts {
+    <script>
+    function orderPizza() {
+        const price = $(".prices").toArray().filter(input => input.checked).reduce((sum, input) => sum + parseFloat(input.value.replace(",", ".")), 0.0);
+
+        if (price == 0) {
+            alert("You must select ingredients");
+            return;
+        }
+
+        if (confirm("Do you want to order pizza with sum of " + price + "€")) {
+            alert("You have order the pizza");
+        } else {
+            alert("You have declined your pizza order");
+        }
+    }
+    </script>
+}

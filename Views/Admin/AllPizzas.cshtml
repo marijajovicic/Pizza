@@ -1,0 +1,38 @@
+﻿@model System.Collections.Generic.List<Pizzeria.Models.PizzaViewModel>
+@{
+    ViewData["Title"] = "Admin Pizza";
+}
+
+<div class="d-flex justify-content-between align-items-baseline mb-5">
+    <h1>Pizza</h1>
+    <a href="@Url.Action("Index", "Admin")">Go back</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Ingredients</th>
+            <th scope="col">Price</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pizza in Model)
+        {
+            <tr>
+                <td>@pizza.Name</td>
+                <td>@string.Join(", ", pizza.Ingredients)</td>
+                <td>@pizza.Price</td>
+                <td>
+                    <form method="post" asp-action="DeletePizza">
+                        <input type="hidden" name="id" value="@pizza.Id" />
+                        <button class="btn btn-danger" type="submit">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

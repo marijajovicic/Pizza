@@ -2,7 +2,41 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1 class="mb-5">Pizza</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Ingredients</th>
+            <th scope="col">Price</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pizza in Model)
+        {
+            <tr>
+                <td>@pizza.Name</td>
+                <td>@string.Join(", ", pizza.Ingredients)</td>
+                <td>@pizza.Price</td>
+                <td>
+                    <button class="btn btn-success" onclick="orderPizza('@pizza.Name')">
+                        Order
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+    function orderPizza(pizzaName) {
+        if (confirm("Do you want to order pizza: " + pizzaName)) {
+            alert("You have order the pizza");
+        } else {
+            alert("You have declined your pizza order");
+        }
+    }
+    </script>
+}
