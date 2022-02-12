@@ -111,6 +111,11 @@ namespace Pizzeria.Controllers
             {
                 return View("Ingredient", (models, layers, "Name can not be empty", ""));
             } 
+            if (string.IsNullOrWhiteSpace(ingredient.Price))
+            {
+                return View("Ingredient", (models, layers, "Price can not be empty", ""));
+            } 
+
             var price = float.Parse(ingredient.Price.Replace(".", ","));
             if (price < 0)
             {
@@ -196,6 +201,10 @@ namespace Pizzeria.Controllers
                 Price = Math.Round(i.Price, 2).ToString("0.00").Replace(",", ".")
             }); 
             
+            if (string.IsNullOrWhiteSpace(price))
+            {
+                return View("Ingredient", (models, layers, "", "price can not be empty")); 
+            }
             var priceF = float.Parse(price.Replace(".", ","));
             if (priceF < 0)
             {
@@ -317,7 +326,7 @@ namespace Pizzeria.Controllers
                 return RedirectToAction("Index");
             } 
 
-            if (!string.IsNullOrWhiteSpace(pizza.Name) && pizza.IngredientIds.Count != 0)
+            if (!string.IsNullOrWhiteSpace(pizza.Name) && pizza.IngredientIds != null && pizza.IngredientIds.Count != 0)
             {
                 await _mongoDatabase.GetCollection<Pizza>(MongoDB.PizzaCollection).InsertOneAsync(pizza);
             }
